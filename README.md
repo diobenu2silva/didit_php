@@ -1,37 +1,16 @@
-<center>
-<img src="https://i.ibb.co/cKzkJBrN/alexstewartja-php-didit.png" alt="PHP SDK for Didit KYC/CIAM by alexstewartja on GitHub">
-<br>
-<br>
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://docs.didit.me/_next/static/media/didit-logo-wordmark-white.3ddb2264.svg#gh-dark-mode-only">
-  <img height="200px" alt="Didit Logo" src="https://docs.didit.me/_next/static/media/didit-logo-wordmark-black.3479c043.svg#gh-light-mode-only">
-</picture>
-
 # PHP Didit
-[![Latest Stable Version](http://poser.pugx.org/alexstewartja/php-didit/v)](https://packagist.org/packages/alexstewartja/php-didit)
-[![Total Downloads](http://poser.pugx.org/alexstewartja/php-didit/downloads)](https://packagist.org/packages/alexstewartja/php-didit)
-[![License](http://poser.pugx.org/alexstewartja/php-didit/license)](https://packagist.org/packages/alexstewartja/php-didit)
 
-![Tests Status](https://img.shields.io/github/actions/workflow/status/alexstewartja/php-didit/run-tests.yml?label=tests)
-![Static Analysis](https://img.shields.io/github/actions/workflow/status/alexstewartja/php-didit/fix-php-code-style-issues.yml?label=code%20style)
-
-[![PHP Version Required](http://poser.pugx.org/alexstewartja/php-didit/require/php)](https://packagist.org/packages/alexstewartja/php-didit)
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me-A_Coffee-orange?logo=buy-me-a-coffee)](https://buymeacoffee.com/alexstewartja)
-
-PHP SDK for [Didit](https://didit.me/business)'s identity verification (KYC) and authentication (CIAM) solutions
-
-</center>
+PHP SDK for Didit's identity verification (KYC) and authentication (CIAM) solutions.
 
 ## Features
 
-- :white_check_mark: [Verification](https://docs.didit.me/identity-verification/full-flow)
-- :hourglass_flowing_sand: [Auth](https://docs.didit.me/auth-and-data/sign-in-api-reference/full-flow)
-- :hourglass_flowing_sand: [Data](https://docs.didit.me/auth-and-data/data-api-reference/full-flow)
+- Verification
+- Auth (coming soon)
+- Data (coming soon)
 
 ## Installation
 
-You can install the package via composer:
+Install the package via composer:
 
 ```bash
 composer require alexstewartja/php-didit
@@ -41,123 +20,85 @@ composer require alexstewartja/php-didit
 
 ### Get Access Token
 
-Supply
-the [Client ID and Client Secret](https://docs.didit.me/identity-verification/quick-start#configure-verification-settings)
-of your application, from the Didit console:
+Supply the Client ID and Client Secret of your application from the Didit console:
 
 ```php
-// Replace these example credentials with your own...
-$client_id = 'AcL8JK38FqNPmx20qrd3-b';
-$client_secret = 'QuajPJsV0sKiQ3M33fd4RK2rVofEmHXLolKW_ZeyeNL';
+$client_id = 'your-client-id';
+$client_secret = 'your-client-secret';
 
 $token_info = Didit::getAccessToken($client_id, $client_secret);
 $access_token = $token_info->getAccessToken();
-// Store your access token securely...
 ```
 
 ### Create a Verification Session
 
-After obtaining a valid client access token, you can then create a new verification session:
+After obtaining a valid client access token, create a new verification session:
 
 ```php
-$access_token = 'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9...'; // Retrieved from secure storage
-$vendor_data = 'c4afad98-e044-4a5f-b68f-5ffaaaefe6a0'; // Commonly, a unique id/uuid of the user in your application
-$callback = 'https://verify.didit.me/'; // URL to redirect your user after they complete verification
-$features = VerificationFeatures::OCR_FACE; // Optional verification features to enable
+$access_token = 'your-access-token';
+$vendor_data = 'user-unique-id';
+$callback = 'https://verify.didit.me/';
+$features = VerificationFeatures::OCR_FACE;
 
 $session = Didit::createVerificationSession($access_token, $vendor_data, $callback);
 $session_id = $session->getSessionId();
-// Store your session ID for future reference, commonly as part of your user record...
 $session_url = $session->getSessionUrl();
-// Redirect your user to the verification URL...
 ```
 
 ### Retrieve a Verification Session
 
-Retrieve the results of a verification session by supplying its `session_id`:
+Retrieve the results of a verification session:
 
 ```php
-$access_token = 'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9...'; // Retrieved from secure storage
-$session_id = 'e8933296-fa3b-4a7a-9c99-b132d34b19fc'; // Retrieved from user record
+$access_token = 'your-access-token';
+$session_id = 'session-id';
 
 $session = Didit::getVerificationSession($access_token, $session_id);
 ```
 
 ### Update a Verification Session Status
 
-You may approve or decline a verification, by updating its status to `Approved` or `Declined` respectively:
+Approve or decline a verification:
 
 ```php
-$access_token = 'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9...'; // Retrieved from secure storage
-$session_id = 'e8933296-fa3b-4a7a-9c99-b132d34b19fc'; // Retrieved from user record
+$access_token = 'your-access-token';
+$session_id = 'session-id';
 $new_status = VerificationStatus::DECLINED;
-$comment = 'User is from a country that is no longer supported'; // Optional comment/reason for review
+$comment = 'Optional comment for review';
 
 $declined = Didit::updateVerificationSessionStatus($access_token, $session_id, $new_status, $comment);
-if ($declined) {
-    // Status update was successful...
-}
 ```
 
 ### Generate a Verification PDF Report
 
-You can generate a PDF for sessions that are either `In Review`, `Declined` or `Approved`:
+Generate a PDF for sessions:
 
 ```php
-$access_token = 'eyJhbGciOiAiUlMyNTYiLCAidHlwIjogIkpXVCJ9...'; // Retrieved from secure storage
-$session_id = 'e8933296-fa3b-4a7a-9c99-b132d34b19fc'; // Retrieved from user record
-$save_to = './session_pdf_downloads/session.pdf'; // Optional file path to store generated PDF
+$access_token = 'your-access-token';
+$session_id = 'session-id';
+$save_to = './session_pdf_downloads/session.pdf';
 
 $generated = Didit::generateVerificationSessionPdf($access_token, $session_id, $save_to);
-if ($generated) {
-    // PDF generated and stored successfully...
-}
 ```
-
-> :information_source: If no `$save_to` path is supplied, an instance of `Psr\Http\Message\StreamInterface`
-> will be returned, allowing for further processing.
 
 ## Testing
 
-1. Navigate to the `tests/assets` directory and copy `credentials.json.example` to `credentials.json`:
-    ```bash
-    cp tests/assets/credentials.json.example tests/assets/credentials.json
-    ```
-2. Open `tests/assets/credentials.json`. Enter
-   your [Client ID and Client Secret](https://docs.didit.me/identity-verification/quick-start#configure-verification-settings)
-   into the `client_id` and
-   `client_secret` fields, respectively.
+1. Copy credentials template:
+   ```bash
+   cp tests/assets/credentials.json.example tests/assets/credentials.json
+   ```
+2. Add your Client ID and Client Secret to `tests/assets/credentials.json`
+3. Run tests:
+   ```bash
+   composer test
+   ```
 
-3. Run the test suite:
-    ```bash
-    composer test
-    ```
+## Project Structure
 
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
-
-## Contributing
-
-A [Lando](https://lando.dev/) file is included in the repo to get up and running quickly:
-
-```bash
-lando start
-```
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for more details.
-
-## Security
-
-If you discover any security related issues, please
-email [didit@alexstewartja.com](mailto:didit@alexstewartja.com?Subject=PHP%20Didit) instead of
-using the issue tracker.
-
-## Credits
-
-- [Alex Stewart](https://github.com/alexstewartja)
-- [All Contributors](../../contributors)
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+- `src/` - Source code
+- `tests/` - Test files
+- `composer.json` - Dependencies and package configuration
+- `CHANGELOG.md` - Version history
+- `CONTRIBUTING.md` - Contribution guidelines
+- `LICENSE.md` - License information
+- `README.md` - Documentation 
